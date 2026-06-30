@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRPL · New Connection Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5fa;--panel:#fff;--line:#e2e5f0;--line-soft:#edeef6;
+  --ink-0:#161b33;--ink-1:#525a7d;--ink-2:#848bab;--ink-3:#aab0c8;
+  --amber:#c9740a;--amber-bg:#fff3e0;--amber-deep:#a85d00;
+  --teal:#0f9488;--teal-bg:#e3f7f4;
+  --red:#d6303f;--red-bg:#fde8ea;--red-deep:#b8202e;
+  --violet:#6c4fe0;--violet-bg:#ede8fc;
+  --blue:#3a66dd;--blue-bg:#e8edfc;
+  --r-sm:8px;--r-md:12px;--r-lg:18px;
+  --shadow:0 1px 2px rgba(22,27,51,.04),0 6px 20px -6px rgba(22,27,51,.1);
+  --f-disp:'Oswald',sans-serif;--f-body:'Inter',sans-serif;--f-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink-0);font-family:var(--f-body);min-height:100vh;-webkit-font-smoothing:antialiased;}
+::selection{background:var(--amber);color:#fff;}
+::-webkit-scrollbar{width:10px;}::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+.shell{max-width:1440px;margin:0 auto;padding:0 24px 60px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;
+  background:rgba(244,245,250,.9);backdrop-filter:blur(12px);}
+.brand{display:flex;align-items:center;gap:13px;}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#e08a1c,#c9740a);
+  display:flex;align-items:center;justify-content:center;font:700 16px var(--f-disp);color:#fff;flex-shrink:0;}
+.brand-text h1{font:600 17px var(--f-disp);display:flex;align-items:baseline;gap:7px;}
+.brand-text h1 span{color:var(--amber);}
+.brand-text p{font-size:11px;color:var(--ink-2);margin-top:2px;letter-spacing:.4px;}
+.top-meta{display:flex;align-items:center;gap:18px;}
+.live-pill{display:flex;align-items:center;gap:7px;font:11px var(--f-mono);color:#fff;
+  padding:6px 12px;border-radius:99px;background:var(--teal);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 2s infinite;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:.4;}100%{opacity:1;}}
+.refresh-time{font:11px var(--f-mono);color:var(--ink-2);}
+.refresh-time b{color:var(--ink-1);}
+
+.filterbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 0 0;}
+.chip{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:7px 12px;font-size:12px;}
+.chip .l{color:var(--ink-3);text-transform:uppercase;font-size:9.5px;letter-spacing:.5px;font-weight:600;}
+.chip .v{color:var(--ink-0);font-weight:600;font-family:var(--f-mono);}
+.chip.range{background:var(--amber-bg);border-color:#f0d5a8;}
+.chip.range .v{color:var(--amber-deep);}
+.sp{flex:1;}
+.export-btn{display:flex;align-items:center;gap:6px;background:var(--ink-0);border:none;
+  color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;}
+
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:36px 0 14px;}
+.sec h2{font:600 12.5px var(--f-disp);letter-spacing:1.8px;text-transform:uppercase;}
+.sec .idx{font:10.5px var(--f-mono);color:#fff;background:var(--ink-0);padding:2px 8px;border-radius:5px;margin-left:10px;}
+.sec .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);margin-left:16px;}
+.sec .sub{font-size:11.5px;color:var(--ink-2);}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow);}
+.card.pad{padding:18px;}
+.grid{display:grid;gap:14px;}
+.g4{grid-template-columns:repeat(4,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g2{grid-template-columns:repeat(2,1fr);}
+.panel-title{font:600 13px var(--f-disp);letter-spacing:.3px;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;}
+.panel-title .sub{font:400 10.5px var(--f-body);color:var(--ink-2);}
+
+/* colored stat tiles */
+.tile{border-radius:var(--r-md);padding:16px 18px;position:relative;overflow:hidden;}
+.tile.amber{background:var(--amber-bg);}
+.tile.teal{background:var(--teal-bg);}
+.tile.red{background:var(--red-bg);}
+.tile.blue{background:var(--blue-bg);}
+.tile.violet{background:var(--violet-bg);}
+.tile.dark{background:var(--ink-0);color:#fff;}
+.tile .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;opacity:.75;}
+.tile .v{font:700 27px var(--f-disp);margin-top:6px;line-height:1;}
+.tile .v small{font-size:13px;font-weight:400;opacity:.7;margin-left:2px;}
+.tile.amber .l,.tile.amber .v{color:var(--amber-deep);}
+.tile.teal .l,.tile.teal .v{color:#0a7468;}
+.tile.red .l,.tile.red .v{color:var(--red-deep);}
+.tile.blue .l,.tile.blue .v{color:#2748a8;}
+.tile.violet .l,.tile.violet .v{color:#5236b0;}
+.tile .sub{font-size:10.5px;margin-top:5px;opacity:.65;}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:18px;}
+.hero-main{background:linear-gradient(135deg,#fff7ec,#fff);border:1px solid #f0d5a8;border-radius:var(--r-lg);
+  padding:28px 30px;box-shadow:var(--shadow);}
+.eyebrow{font:11px var(--f-mono);color:var(--amber-deep);letter-spacing:1px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;}
+.hero-num{font:700 64px var(--f-disp);letter-spacing:-1px;line-height:.9;color:var(--ink-0);}
+.hero-delta{display:inline-flex;align-items:center;gap:6px;background:var(--teal);color:#fff;
+  padding:5px 11px;border-radius:99px;font:600 11.5px var(--f-mono);margin:12px 0 8px;}
+.hero-cap{font-size:13px;color:var(--ink-1);max-width:540px;line-height:1.5;}
+.hero-foot{display:flex;gap:24px;margin-top:18px;padding-top:16px;border-top:1px solid #f0d5a8;flex-wrap:wrap;}
+.hero-foot .it{min-width:100px;}
+.hero-foot .v{font:600 18px var(--f-mono);color:var(--ink-0);}
+.hero-foot .l{font-size:10px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+.hero-side{display:flex;flex-direction:column;gap:14px;}
+.hero-side .tile{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.hero-side .top{display:flex;justify-content:space-between;align-items:flex-start;}
+.pill{font:700 10px var(--f-mono);padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.6);}
+
+/* pipeline */
+.pipe-wrap{padding:24px 24px 14px;margin-top:18px;overflow-x:auto;}
+.pipe-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-width:980px;}
+.pipe-stage{border-radius:var(--r-md);padding:16px;color:#fff;position:relative;}
+.pipe-n{font:700 10px var(--f-mono);opacity:.75;text-transform:uppercase;}
+.pipe-title{font:600 14px var(--f-disp);margin-top:4px;}
+.pipe-owner{font:10px var(--f-mono);opacity:.8;margin-top:2px;}
+.pipe-big{font:700 24px var(--f-disp);margin-top:14px;}
+.pipe-lbl{font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.3px;}
+.pipe-track{height:5px;background:rgba(255,255,255,.3);border-radius:99px;margin-top:10px;overflow:hidden;}
+.pipe-fill{height:100%;background:#fff;border-radius:99px;}
+.pipe-flag{display:inline-flex;align-items:center;gap:5px;font-size:10px;background:rgba(255,255,255,.18);
+  padding:4px 8px;border-radius:6px;margin-top:10px;font-weight:600;}
+.pipe-flag::before{content:'⚠';}
+.s1{background:linear-gradient(160deg,#e08a1c,#c9740a);}
+.s2{background:linear-gradient(160deg,#5b85f0,#3a66dd);}
+.s3{background:linear-gradient(160deg,#8a72f0,#6c4fe0);}
+.s4{background:linear-gradient(160deg,#ea4a59,#c4232f);}
+.s5{background:linear-gradient(160deg,#14b8a8,#0f9488);}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:14px 4px 4px;border-top:1px solid var(--line-soft);margin-top:14px;}
+.legend span{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--ink-2);}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+
+/* funnel chain */
+.chain{display:flex;}
+.chain-card{flex:1;padding:16px;position:relative;color:#fff;}
+.chain-card:first-child{border-radius:var(--r-md) 0 0 var(--r-md);}
+.chain-card:last-child{border-radius:0 var(--r-md) var(--r-md) 0;}
+.chain-card .arrow{position:absolute;right:-11px;top:50%;transform:translateY(-50%);width:22px;height:22px;
+  border-radius:50%;background:#fff;border:1px solid var(--line);display:flex;align-items:center;
+  justify-content:center;font-size:11px;color:var(--ink-1);z-index:5;}
+.chain-card .l{font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;opacity:.8;}
+.chain-card .v{font:700 22px var(--f-disp);margin-top:6px;}
+.chain-card .d{font:10.5px var(--f-mono);margin-top:4px;opacity:.85;}
+.c1{background:linear-gradient(160deg,#5b85f0,#3a66dd);}
+.c2{background:linear-gradient(160deg,#7a91d8,#5468c0);}
+.c3{background:linear-gradient(160deg,#8a72f0,#6c4fe0);}
+.c4{background:linear-gradient(160deg,#ea4a59,#c4232f);}
+
+/* slabs */
+.row{display:flex;align-items:center;gap:12px;padding:9px 0;}
+.row .lbl{width:48px;font:11px var(--f-mono);color:var(--ink-1);flex-shrink:0;}
+.row .track{flex:1;height:9px;background:var(--line-soft);border-radius:99px;overflow:hidden;}
+.row .fill{height:100%;border-radius:99px;}
+.row .cnt{width:60px;text-align:right;font:700 11.5px var(--f-mono);flex-shrink:0;}
+.row .pct{width:36px;text-align:right;font:10.5px var(--f-mono);color:var(--ink-2);flex-shrink:0;}
+
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);display:flex;
+  justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.foot p{font:10.5px var(--f-mono);color:var(--ink-3);}
+
+/* graphs */
+.donut-wrap{display:flex;align-items:center;gap:24px;}
+.donut{width:170px;height:170px;flex-shrink:0;}
+.donut-num{font:700 28px var(--f-disp);fill:var(--ink-0);}
+.donut-lbl{font:600 10px var(--f-body);fill:var(--ink-2);letter-spacing:.3px;text-transform:uppercase;}
+.bv-num{font:700 13px var(--f-mono);fill:var(--ink-0);}
+.bv-lbl{font:600 11px var(--f-body);fill:var(--ink-2);}
+.donut-legend{display:flex;flex-direction:column;gap:12px;}
+.dl-row{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-1);}
+.dl-row b{margin-left:auto;color:var(--ink-0);font-family:var(--f-mono);}
+.bar-chart{width:100%;height:auto;}
+
+.rise{animation:rise .5s cubic-bezier(.16,1,.3,1) both;}
+@keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+@media (max-width:1080px){.hero,.g4,.g3,.g2{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:760px){
+  .shell{padding:0 14px 40px;}
+  .g4,.g3,.g2{grid-template-columns:1fr;}
+  .chain{flex-direction:column;}
+  .chain-card{border-radius:var(--r-md)!important;margin-bottom:8px;}
+  .chain-card .arrow{display:none;}
+  .topbar{flex-direction:column;align-items:flex-start;gap:8px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">BR</div>
+    <div class="brand-text">
+      <h1>BRPL <span>New Connection</span> Command Center</h1>
+      <p>BSES RAJDHANI POWER LTD · DISTRIBUTION OPS</p>
+    </div>
+  </div>
+  <div class="top-meta">
+    <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+    <div class="refresh-time">Updated <b>21 Jun 2026, 19:48</b></div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="filterbar">
+    <div class="chip range"><span class="l">From</span><span class="v">2024-04-01</span></div>
+    <div class="chip range"><span class="l">To</span><span class="v">2026-06-22</span></div>
+    <div class="chip"><span class="l">Discom</span><span class="v">BRPL</span></div>
+    <div class="chip"><span class="l">Circle</span><span class="v">All</span></div>
+    <div class="sp"></div>
+    <button class="export-btn">⬇ Export</button>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-main rise">
+      <div class="eyebrow">● Total Documents Accepted</div>
+      <div class="hero-num">436,562</div>
+      <div class="hero-delta">↑ 12,840 vs. previous cycle</div>
+      <p class="hero-cap">Cumulative applications across ON (online) and AN (offline) intake since 1 Apr 2024 — entry point of Stage 1 before document verification and CF routing.</p>
+      <div class="hero-foot">
+        <div class="it"><div class="v">400,382</div><div class="l">Installed</div></div>
+        <div class="it"><div class="v">16,831</div><div class="l">In Process</div></div>
+        <div class="it"><div class="v">91.7%</div><div class="l">Conversion</div></div>
+        <div class="it"><div class="v">5.8 days</div><div class="l">Cycle Time</div></div>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="tile teal rise" style="animation-delay:.05s">
+        <div class="top"><div class="l">Doc. Acceptance Rate</div><span class="pill">Healthy</span></div>
+        <div class="v">98.5<small>%</small></div>
+      </div>
+      <div class="tile red rise" style="animation-delay:.1s">
+        <div class="top"><div class="l">DN Payment Pending &gt; 30D Risk</div><span class="pill">Watch</span></div>
+        <div class="v">1,821<small> apps</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="sec"><h2>Process Pipeline<span class="idx">5 STAGES</span></h2><div class="rule"></div><div class="sub">Consumer → CF → O&amp;M → MIT+AMPS → Demand Note</div></div>
+
+  <div class="card pipe-wrap rise">
+    <div class="pipe-rail">
+      <div class="pipe-stage s1">
+        <div class="pipe-n">Stage 01 · DSK</div>
+        <div class="pipe-title">Consumer Intake</div>
+        <div class="pipe-owner">ON / AN application</div>
+        <div class="pipe-big">436,562</div><div class="pipe-lbl">Received</div>
+        <div class="pipe-track"><div class="pipe-fill" style="width:98.5%;"></div></div>
+        <div class="pipe-flag">3 reuploads / 7d cap</div>
+      </div>
+      <div class="pipe-stage s2">
+        <div class="pipe-n">Stage 02 · CF</div>
+        <div class="pipe-title">Feasibility</div>
+        <div class="pipe-owner">AI-Auto + Exception</div>
+        <div class="pipe-big">432,948</div><div class="pipe-lbl">Allocated</div>
+        <div class="pipe-track"><div class="pipe-fill" style="width:96%;"></div></div>
+        <div class="pipe-flag">14,810 in deficiency</div>
+      </div>
+      <div class="pipe-stage s3">
+        <div class="pipe-n">Stage 03 · O&amp;M</div>
+        <div class="pipe-title">SDO Review</div>
+        <div class="pipe-owner">48h SLA</div>
+        <div class="pipe-big">419,731</div><div class="pipe-lbl">Verified</div>
+        <div class="pipe-track"><div class="pipe-fill" style="width:92%;"></div></div>
+        <div class="pipe-flag">DERC 2mo / 4mo</div>
+      </div>
+      <div class="pipe-stage s4">
+        <div class="pipe-n">Stage 04 · MIT</div>
+        <div class="pipe-title">Site Visit + AMPS</div>
+        <div class="pipe-owner">08:00–16:00 window</div>
+        <div class="pipe-big">403,197</div><div class="pipe-lbl">DN Generated</div>
+        <div class="pipe-track"><div class="pipe-fill" style="width:88%;"></div></div>
+        <div class="pipe-flag">Max 3 revisits</div>
+      </div>
+      <div class="pipe-stage s5">
+        <div class="pipe-n">Stage 05 · MIT-2</div>
+        <div class="pipe-title">Install &amp; Bill</div>
+        <div class="pipe-owner">SAP update</div>
+        <div class="pipe-big">400,382</div><div class="pipe-lbl">Meters Installed</div>
+        <div class="pipe-track"><div class="pipe-fill" style="width:91.7%;"></div></div>
+        <div class="pipe-flag">Cancel if unpaid 30d</div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--amber);"></span>Intake</span>
+      <span><span class="dot" style="background:var(--blue);"></span>Feasibility (AI)</span>
+      <span><span class="dot" style="background:var(--violet);"></span>O&amp;M review</span>
+      <span><span class="dot" style="background:var(--red);"></span>Field verification</span>
+      <span><span class="dot" style="background:var(--teal);"></span>Billing &amp; install</span>
+    </div>
+  </div>
+
+  <!-- FUNNEL -->
+  <div class="sec"><h2>Feasibility Funnel<span class="idx">02 / 04</span></h2><div class="rule"></div><div class="sub">Drop-off at every handoff</div></div>
+  <div class="card rise">
+    <div class="chain">
+      <div class="chain-card c1"><div class="l">CF / Team Alloc.</div><div class="v">432,948</div><div class="d">Base</div><div class="arrow">›</div></div>
+      <div class="chain-card c2"><div class="l">Site Verify / TF</div><div class="v">429,984</div><div class="d">−2,964</div><div class="arrow">›</div></div>
+      <div class="chain-card c3"><div class="l">Verified by AMPS</div><div class="v">419,731</div><div class="d">−10,253</div><div class="arrow">›</div></div>
+      <div class="chain-card c4"><div class="l">CF–TF Deficiency</div><div class="v">14,810</div><div class="d">3.4% of intake</div></div>
+    </div>
+  </div>
+
+  <!-- DEMAND NOTE + INSTALL OUTCOMES -->
+  <div class="sec"><h2>Demand Note &amp; Installation</h2><div class="rule"></div><div class="sub">Stage 04–05 outcomes</div></div>
+  <div class="grid g4">
+    <div class="tile blue rise"><div class="l">DN Generated</div><div class="v">403,197</div></div>
+    <div class="tile teal rise" style="animation-delay:.04s"><div class="l">DN Auto-Debited</div><div class="v">401,376<small>99.5%</small></div></div>
+    <div class="tile red rise" style="animation-delay:.08s"><div class="l">DN Payment Pending</div><div class="v">1,821</div><div class="sub">Cancels at 30d unpaid</div></div>
+    <div class="tile amber rise" style="animation-delay:.12s"><div class="l">Yet To Install</div><div class="v">994</div></div>
+  </div>
+
+  <!-- SLABS -->
+  <div class="grid g2" style="margin-top:14px;">
+    <div class="card pad rise">
+      <div class="panel-title">Installation Slabs <span class="sub">days since acceptance</span></div>
+      <div class="row"><div class="lbl">0–1D</div><div class="track"><div class="fill" style="width:7%;background:var(--teal);"></div></div><div class="cnt">30,173</div><div class="pct">7%</div></div>
+      <div class="row"><div class="lbl">1–2D</div><div class="track"><div class="fill" style="width:13%;background:var(--teal);"></div></div><div class="cnt">51,432</div><div class="pct">13%</div></div>
+      <div class="row"><div class="lbl">2–3D</div><div class="track"><div class="fill" style="width:22%;background:var(--blue);"></div></div><div class="cnt">88,796</div><div class="pct">22%</div></div>
+      <div class="row"><div class="lbl">3–5D</div><div class="track"><div class="fill" style="width:37%;background:var(--blue);"></div></div><div class="cnt">148,163</div><div class="pct">37%</div></div>
+      <div class="row"><div class="lbl">5–7D</div><div class="track"><div class="fill" style="width:12%;background:var(--amber);"></div></div><div class="cnt">46,851</div><div class="pct">12%</div></div>
+      <div class="row"><div class="lbl">&gt;7D</div><div class="track"><div class="fill" style="width:9%;background:var(--red);"></div></div><div class="cnt">34,967</div><div class="pct">9%</div></div>
+    </div>
+
+    <div class="card pad rise" style="animation-delay:.05s">
+      <div class="panel-title">WIP By Checkpoint <span class="sub">Total: 16,831</span></div>
+      <div class="row"><div class="lbl" style="width:140px;">CF Allocation</div><div class="track"><div class="fill" style="width:21.5%;background:var(--amber);"></div></div><div class="cnt">3,614</div></div>
+      <div class="row"><div class="lbl" style="width:140px;">Site Visit / TF</div><div class="track"><div class="fill" style="width:17.6%;background:var(--blue);"></div></div><div class="cnt">2,964</div></div>
+      <div class="row"><div class="lbl" style="width:140px;">AMPS Approval</div><div class="track"><div class="fill" style="width:60.9%;background:var(--violet);"></div></div><div class="cnt">10,253</div></div>
+    </div>
+  </div>
+
+  <!-- GRAPHS -->
+  <div class="sec"><h2>Visual Breakdown</h2><div class="rule"></div><div class="sub">Document mix &amp; demand note outcomes</div></div>
+  <div class="grid g2">
+    <div class="card pad rise">
+      <div class="panel-title">Document Status Mix <span class="sub">% of 436,562 accepted</span></div>
+      <div class="donut-wrap">
+        <svg viewBox="0 0 200 200" class="donut">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#edeef6" stroke-width="28"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="var(--teal)" stroke-width="28"
+            stroke-dasharray="402 502" stroke-dashoffset="0" stroke-linecap="round" class="seg" data-len="402"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="var(--amber)" stroke-width="28"
+            stroke-dasharray="48 502" stroke-dashoffset="-402" stroke-linecap="round" class="seg" data-len="48"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="var(--red)" stroke-width="28"
+            stroke-dasharray="14 502" stroke-dashoffset="-450" stroke-linecap="round" class="seg" data-len="14"/>
+          <text x="100" y="94" text-anchor="middle" class="donut-num">91.7%</text>
+          <text x="100" y="116" text-anchor="middle" class="donut-lbl">Installed</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="dl-row"><span class="dot" style="background:var(--teal);"></span>Installed / Auto-Debited <b>80%</b></div>
+          <div class="dl-row"><span class="dot" style="background:var(--amber);"></span>In Process (WIP) <b>9.5%</b></div>
+          <div class="dl-row"><span class="dot" style="background:var(--red);"></span>Deficiency / Pending <b>3.4%</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card pad rise" style="animation-delay:.05s">
+      <div class="panel-title">Demand Note Outcomes <span class="sub">applications</span></div>
+      <svg viewBox="0 0 612 240" class="bar-chart">
+        <line x1="68" y1="24" x2="68" y2="200" stroke="#e2e5f0" stroke-width="1"/>
+        <line x1="68" y1="200" x2="588" y2="200" stroke="#e2e5f0" stroke-width="1"/>
+
+        <rect class="bar-rect" x="116" y="44" width="105" height="156" rx="9" fill="var(--blue)"/>
+        <text x="168" y="32" text-anchor="middle" class="bv-num">403,197</text>
+        <text x="168" y="220" text-anchor="middle" class="bv-lbl">Generated</text>
+
+        <rect class="bar-rect" x="282" y="45" width="105" height="155" rx="9" fill="var(--teal)"/>
+        <text x="334" y="33" text-anchor="middle" class="bv-num">401,376</text>
+        <text x="334" y="220" text-anchor="middle" class="bv-lbl">Auto-Debited</text>
+
+        <rect class="bar-rect" x="448" y="193" width="105" height="7" rx="3" fill="var(--red)"/>
+        <text x="500" y="183" text-anchor="middle" class="bv-num">1,821</text>
+        <text x="500" y="220" text-anchor="middle" class="bv-lbl">Pending</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p>BRPL NEW CONNECTION DASHBOARD · SOURCE: DOP / DERC SUMMARY</p>
+    <div class="legend" style="border-top:none;padding:0;margin:0;">
+      <span><span class="dot" style="background:var(--teal);"></span>On Track</span>
+      <span><span class="dot" style="background:var(--amber);"></span>Watch</span>
+      <span><span class="dot" style="background:var(--red);"></span>Breach Risk</span>
+    </div>
+  </div>
+
+</div>
+<script>
+document.querySelectorAll('.seg').forEach(seg=>{
+  const len = seg.getAttribute('data-len');
+  seg.style.strokeDasharray = '0 502';
+  setTimeout(()=>{
+    seg.style.transition = 'stroke-dasharray 1s cubic-bezier(.16,1,.3,1)';
+    seg.style.strokeDasharray = len + ' 502';
+  }, 150);
+});
+</script>
+</body>
+</html>
